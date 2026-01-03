@@ -142,6 +142,8 @@ class Start_Screen():
                 self.multiplayer_state["seed"] = payload.get("seed")
                 self.multiplayer_state["start_time"] = payload.get("start_time")
                 self.multiplayer_state["settings"] = payload.get("settings", {})
+                if payload.get("players") is not None:
+                    self.multiplayer_state["players"] = payload.get("players", [])
                 self.start_multiplayer_game()
             elif message_type == "game_finished":
                 self.multiplayer_state["leaderboard"] = payload.get("leaderboard", [])
@@ -150,7 +152,6 @@ class Start_Screen():
 
     def start_multiplayer_game(self):
         from game import Game
-
         settings_data = self.multiplayer_state.get("settings", {})
         rows = settings_data.get("rows", 10)
         cols = settings_data.get("cols", rows)
@@ -168,3 +169,5 @@ class Start_Screen():
         game = Game(settings=game_settings, multiplayer=multiplayer)
         game.new()
         game.run()
+        self.window = pygame.display.set_mode((self.DISPLAY_W, self.DISPLAY_H))
+        self.curr_menu = self.lobby_menu

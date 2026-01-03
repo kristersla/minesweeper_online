@@ -1253,7 +1253,7 @@ class LobbySettingsMenu(Menu):
                             probability = probability[:-1]
                         else:
                             width = width[:-1]
-                    elif event.key == pygame.K_RETURN:
+                    elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         self.save_settings(rows, probability, width)
                         self.start_screen.curr_menu = self.start_screen.lobby_menu
                         self.run_display = False

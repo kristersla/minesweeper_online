@@ -38,6 +38,7 @@ class Game:
         self.state = "playing"
         self.waiting_message = None
         self.leaderboard = []
+        self.leaderboard_ranked_by = "time"
         if self.multiplayer:
             seed = self.multiplayer.get("seed")
             self.start_timestamp = self.multiplayer.get("start_time", time.time())
@@ -411,6 +412,7 @@ class Game:
                 self.multiplayer["players"] = message["payload"].get("players", [])
             elif message.get("type") == "game_finished":
                 self.leaderboard = message["payload"].get("leaderboard", [])
+                self.leaderboard_ranked_by = message["payload"].get("ranked_by", "time")
                 self.playing = False
                 self.leaderboard_screen()
 
@@ -429,8 +431,12 @@ class Game:
         for idx, entry in enumerate(self.leaderboard, start=1):
             name = entry.get("name", "Player")
             status = entry.get("status", "alive")
-            time_taken = entry.get("time", "-")
-            line = f"{idx}. {name} - {status} - {time_taken}s"
+            if self.leaderboard_ranked_by == "flags":
+                flags = entry.get("flags", 0)
+                line = f"{idx}. {name} - {status} - flags: {flags}"
+            else:
+                time_taken = entry.get("time", "-")
+                line = f"{idx}. {name} - {status} - {time_taken}s"
             text = font.render(line, True, (255, 255, 255))
             self.screen.blit(text, (80, y_offset))
             y_offset += 50

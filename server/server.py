@@ -108,6 +108,10 @@ async def handle_message(websocket, message):
         room = rooms.get(code)
         if not room or room.host_id != player_id:
             return None, None
+        for player in room.players.values():
+            player.status = "alive"
+            player.time = None
+            player.flags = 0
         room.seed = random.randint(0, 99999999)
         room.start_time = time.time()
         await broadcast(
@@ -117,6 +121,7 @@ async def handle_message(websocket, message):
                 "seed": room.seed,
                 "settings": room.settings,
                 "start_time": room.start_time,
+                "players": room.lobby_payload()["players"],
             },
         )
         return room, player_id
@@ -142,16 +147,31 @@ async def handle_message(websocket, message):
         player.time = payload.get("time", player.time)
         await broadcast(room, "game_update", {"players": room.lobby_payload()["players"]})
         if all(p.status in ("dead", "finished") for p in room.players.values()):
-            leaderboard = sorted(
-                room.players.values(),
-                key=lambda p: p.time if p.time is not None else 999999,
-            )
+            has_finished = any(p.status == "finished" for p in room.players.values())
+            if has_finished:
+                leaderboard = sorted(
+                    room.players.values(),
+                    key=lambda p: p.time if p.time is not None else 999999,
+                )
+                ranked_by = "time"
+            else:
+                leaderboard = sorted(
+                    room.players.values(),
+                    key=lambda p: (-p.flags, p.time if p.time is not None else 999999),
+                )
+                ranked_by = "flags"
             await broadcast(
                 room,
                 "game_finished",
                 {
+                    "ranked_by": ranked_by,
                     "leaderboard": [
-                        {"name": p.name, "status": p.status, "time": p.time}
+                        {
+                            "name": p.name,
+                            "status": p.status,
+                            "time": p.time,
+                            "flags": p.flags,
+                        }
                         for p in leaderboard
                     ]
                 },
