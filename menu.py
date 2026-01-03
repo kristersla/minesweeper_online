@@ -1204,7 +1204,7 @@ class LobbySettingsMenu(Menu):
                 self.start_screen.DISPLAY_H / 2 - 120,
             )
             self.start_screen.draw_text(
-                "Use Tab to switch fields, Enter to save",
+                "Use Tab to switch fields, Enter to save, Esc to cancel",
                 20,
                 self.start_screen.DISPLAY_W / 2,
                 self.start_screen.DISPLAY_H / 2 - 80,
@@ -1255,6 +1255,9 @@ class LobbySettingsMenu(Menu):
                             width = width[:-1]
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         self.save_settings(rows, probability, width)
+                        self.start_screen.curr_menu = self.start_screen.lobby_menu
+                        self.run_display = False
+                    elif event.key == pygame.K_ESCAPE:
                         self.start_screen.curr_menu = self.start_screen.lobby_menu
                         self.run_display = False
                     elif event.unicode.isdigit() or (event.unicode == "." and field == "probability"):
