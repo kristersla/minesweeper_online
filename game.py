@@ -39,6 +39,7 @@ class Game:
         self.waiting_message = None
         self.leaderboard = []
         self.leaderboard_ranked_by = "time"
+        self.leaderboard_tie = False
         if self.multiplayer:
             seed = self.multiplayer.get("seed")
             self.start_timestamp = self.multiplayer.get("start_time", time.time())
@@ -413,6 +414,7 @@ class Game:
             elif message.get("type") == "game_finished":
                 self.leaderboard = message["payload"].get("leaderboard", [])
                 self.leaderboard_ranked_by = message["payload"].get("ranked_by", "time")
+                self.leaderboard_tie = message["payload"].get("tie", False)
                 self.playing = False
                 self.leaderboard_screen()
 
@@ -428,6 +430,13 @@ class Game:
         )
         self.screen.blit(title_text, title_rect)
         y_offset = 150
+        if self.leaderboard_tie:
+            tie_text = font.render("Tie!", True, (255, 255, 255))
+            tie_rect = tie_text.get_rect(
+                center=(self.screen.get_rect().centerx, y_offset)
+            )
+            self.screen.blit(tie_text, tie_rect)
+            y_offset += 50
         for idx, entry in enumerate(self.leaderboard, start=1):
             name = entry.get("name", "Player")
             status = entry.get("status", "alive")

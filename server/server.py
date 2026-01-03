@@ -147,24 +147,39 @@ async def handle_message(websocket, message):
         player.time = payload.get("time", player.time)
         await broadcast(room, "game_update", {"players": room.lobby_payload()["players"]})
         if all(p.status in ("dead", "finished") for p in room.players.values()):
-            has_finished = any(p.status == "finished" for p in room.players.values())
+            players = list(room.players.values())
+            has_finished = any(p.status == "finished" for p in players)
+            tie = False
             if has_finished:
                 leaderboard = sorted(
-                    room.players.values(),
-                    key=lambda p: p.time if p.time is not None else 999999,
+                    players,
+                    key=lambda p: (
+                        0 if p.status == "finished" else 1,
+                        p.time if p.time is not None else 999999,
+                    ),
                 )
                 ranked_by = "time"
             else:
                 leaderboard = sorted(
-                    room.players.values(),
+                    players,
                     key=lambda p: (-p.flags, p.time if p.time is not None else 999999),
                 )
                 ranked_by = "flags"
+                tie = (
+                    len(
+                        {
+                            (p.flags, p.time if p.time is not None else 999999)
+                            for p in players
+                        }
+                    )
+                    == 1
+                )
             await broadcast(
                 room,
                 "game_finished",
                 {
                     "ranked_by": ranked_by,
+                    "tie": tie,
                     "leaderboard": [
                         {
                             "name": p.name,
@@ -173,7 +188,7 @@ async def handle_message(websocket, message):
                             "flags": p.flags,
                         }
                         for p in leaderboard
-                    ]
+                    ],
                 },
             )
         return room, player_id
