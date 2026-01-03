@@ -3,7 +3,7 @@ import sys
 
 import pygame
 
-from settings import BGCOLOUR, Settings
+from settings import BGCOLOUR, Settings, MULTIPLAYER_SIDEBAR_WIDTH
 from sprites import Board
 from start_screen import Start_Screen
 
@@ -14,8 +14,12 @@ class Game:
         self.settings = settings or Settings()
         self.multiplayer = multiplayer
         pygame.display.set_caption(self.settings.title)
+        self.sidebar_width = MULTIPLAYER_SIDEBAR_WIDTH if multiplayer else 0
         self.screen = pygame.display.set_mode(
-            (self.settings.screen_width, self.settings.screen_height)
+            (
+                self.settings.screen_width + self.sidebar_width,
+                self.settings.screen_height,
+            )
         )
         self.clock = pygame.time.Clock()
         self.timer_font = pygame.font.Font(None, 32)
@@ -80,9 +84,7 @@ class Game:
             True,
             (255, 255, 255),
         )
-        mine_count_rect = mine_count_text.get_rect(
-            topright=(self.settings.screen_width - 10, 10)
-        )
+        mine_count_rect = mine_count_text.get_rect(topright=(self.screen.get_width() - 10, 10))
         self.screen.blit(mine_count_text, mine_count_rect)
 
         if self.multiplayer:
@@ -114,6 +116,8 @@ class Game:
                 mx, my = pygame.mouse.get_pos()
                 mx //= self.settings.tilesize
                 my //= self.settings.tilesize
+                if mx < 0 or my < 0 or mx >= self.settings.cols or my >= self.settings.rows:
+                    continue
 
                 if event.button == 1:
                     if not self.board.board_list[mx][my].flagged:
@@ -366,11 +370,10 @@ class Game:
             self.waiting_message = "You finished! Waiting for others..."
 
     def draw_sidebar(self):
-        sidebar_width = 220
         sidebar_rect = pygame.Rect(
-            self.settings.screen_width - sidebar_width,
+            self.screen.get_width() - self.sidebar_width,
             0,
-            sidebar_width,
+            self.sidebar_width,
             self.settings.screen_height,
         )
         pygame.draw.rect(self.screen, (30, 30, 30), sidebar_rect)
@@ -381,7 +384,12 @@ class Game:
             status = player.get("status", "alive")
             flags = player.get("flags", 0)
             label = f"{player.get('name', 'Player')} - {status} - flags: {flags}"
-            text = self.timer_font.render(label, True, (255, 255, 255))
+            color = (255, 255, 255)
+            if status == "dead":
+                color = (255, 80, 80)
+            elif status == "finished":
+                color = (80, 255, 120)
+            text = self.timer_font.render(label, True, color)
             self.screen.blit(text, (sidebar_rect.x + 10, y_offset))
             y_offset += 30
 

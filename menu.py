@@ -6,6 +6,7 @@ import time
 import json
 import math
 import os
+from settings import Settings
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"  # Center the window
 
@@ -1172,6 +1173,12 @@ class LobbySettingsMenu(Menu):
         self.background = pygame.transform.scale(
             self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
         )
+        self.presets = [
+            {"name": "Beginner", "rows": 9, "probability": 0.12},
+            {"name": "Easy", "rows": 12, "probability": 0.14},
+            {"name": "Medium", "rows": 16, "probability": 0.16},
+            {"name": "Hard", "rows": 20, "probability": 0.18},
+        ]
 
     def display_menu(self):
         self.run_display = True
@@ -1186,8 +1193,9 @@ class LobbySettingsMenu(Menu):
         probability = str(settings.get("probability", 0.15))
         width = str(settings.get("width", self.start_screen.DISPLAY_W))
         field = "rows"
+        preset_index = None
         while self.run_display:
-            self.start_screen.check_events()
+            self.start_screen.poll_network()
             self.start_screen.display.blit(self.background, (0, 0))
             self.start_screen.draw_text(
                 "Lobby Settings",
@@ -1201,9 +1209,28 @@ class LobbySettingsMenu(Menu):
                 self.start_screen.DISPLAY_W / 2,
                 self.start_screen.DISPLAY_H / 2 - 80,
             )
+            preset_label = "Presets: 1) Beginner  2) Easy  3) Medium  4) Hard"
+            self.start_screen.draw_text(
+                preset_label,
+                18,
+                self.start_screen.DISPLAY_W / 2,
+                self.start_screen.DISPLAY_H / 2 - 50,
+            )
+            if preset_index is not None:
+                self.start_screen.draw_text(
+                    f"Selected preset: {self.presets[preset_index]['name']}",
+                    18,
+                    self.start_screen.DISPLAY_W / 2,
+                    self.start_screen.DISPLAY_H / 2 - 25,
+                )
 
             font = pygame.font.Font("fonts/Jolana.ttf", 26)
-            field_label = f"Tiles: {rows}  |  Probability: {probability}  |  Width: {width}"
+            tiles_label = f"[{rows}]" if field == "rows" else rows
+            prob_label = f"[{probability}]" if field == "probability" else probability
+            width_label = f"[{width}]" if field == "width" else width
+            field_label = (
+                f"Tiles: {tiles_label}  |  Probability: {prob_label}  |  Width: {width_label}"
+            )
             input_surface = font.render(field_label, True, self.start_screen.WHITE)
             self.start_screen.display.blit(input_surface, (input_box.x + 5, input_box.y + 5))
             input_box.w = max(400, input_surface.get_width() + 10)
@@ -1212,6 +1239,13 @@ class LobbySettingsMenu(Menu):
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_TAB:
                         field = "probability" if field == "rows" else "width" if field == "probability" else "rows"
+                    elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
+                        preset_index = event.key - pygame.K_1
+                        preset = self.presets[preset_index]
+                        rows = str(preset["rows"])
+                        probability = str(preset["probability"])
+                        width = str(self.start_screen.DISPLAY_W)
+                        field = "rows"
                     elif event.key == pygame.K_BACKSPACE:
                         if field == "rows":
                             rows = rows[:-1]
@@ -1230,6 +1264,9 @@ class LobbySettingsMenu(Menu):
                             probability += event.unicode
                         else:
                             width += event.unicode
+                elif event.type == pygame.QUIT:
+                    self.start_screen.running = False
+                    self.run_display = False
 
             self.blit_screen()
 
@@ -1239,7 +1276,7 @@ class LobbySettingsMenu(Menu):
                 "rows": int(rows),
                 "cols": int(rows),
                 "probability": float(probability),
-                "width": int(width),
+                "width": max(int(width), Settings.MULTIPLAYER_SIDEBAR_WIDTH + 200),
             }
         except ValueError:
             return
