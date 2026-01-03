@@ -6,7 +6,7 @@ import time
 import json
 import math
 import os
-from settings import Settings
+from settings import Settings, MULTIPLAYER_SIDEBAR_WIDTH
 
 os.environ["SDL_VIDEO_CENTERED"] = "1"  # Center the window
 
@@ -1279,7 +1279,7 @@ class LobbySettingsMenu(Menu):
                 "rows": int(rows),
                 "cols": int(rows),
                 "probability": float(probability),
-                "width": max(int(width), Settings.MULTIPLAYER_SIDEBAR_WIDTH + 200),
+                "width": max(int(width), MULTIPLAYER_SIDEBAR_WIDTH + 200),
             }
         except ValueError:
             return
