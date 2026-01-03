@@ -34,9 +34,8 @@ class MainMenu(Menu):
         self.state = "Start game"
         self.titlex, self.titley = self.mid_w, self.mid_h + -100
         self.startx, self.starty = self.mid_w + -15, self.mid_h + 10
-        self.multiplayerx, self.multiplayery = self.mid_w, self.mid_h + 70
-        self.optionsx, self.optionsy = self.mid_w, self.mid_h + 130
-        self.creditsx, self.creditsy = self.mid_w, self.mid_h + 195
+        self.optionsx, self.optionsy = self.mid_w, self.mid_h + 70
+        self.creditsx, self.creditsy = self.mid_w, self.mid_h + 135
         self.secreditx, self.secredity = self.mid_w, self.mid_h + 10
         self.cursor_rect.midtop = (self.startx + self.offset, self.starty)
         self.background = pygame.image.load('images/background3.png').convert()
@@ -55,7 +54,6 @@ class MainMenu(Menu):
             title_rect = title_text.get_rect(center=(self.titlex, self.titley))
             self.start_screen.display.blit(title_text, title_rect)
             self.start_screen.draw_text("Start game", 40, self.secreditx, self.secredity)
-            self.start_screen.draw_text("Multiplayer", 40, self.multiplayerx, self.multiplayery)
             self.start_screen.draw_text("Options", 40, self.optionsx, self.optionsy)
             self.draw_cursor()
             self.blit_screen()
@@ -67,12 +65,6 @@ class MainMenu(Menu):
     def move_cursor(self):
         if self.start_screen.DOWN_KEY:
             if self.state == 'Start game':
-                self.cursor_rect.midtop = (
-                    self.multiplayerx + self.offset,
-                    self.multiplayery,
-                )
-                self.state = 'Multiplayer'
-            elif self.state == 'Multiplayer':
                 self.cursor_rect.midtop = (self.optionsx + self.offset, self.optionsy)
                 self.state = 'Options'
             elif self.state == 'Options':
@@ -81,12 +73,6 @@ class MainMenu(Menu):
 
         elif self.start_screen.UP_KEY:
             if self.state == 'Options':
-                self.cursor_rect.midtop = (
-                    self.multiplayerx + self.offset,
-                    self.multiplayery,
-                )
-                self.state = 'Multiplayer'
-            elif self.state == 'Multiplayer':
                 self.cursor_rect.midtop = (self.secreditx + self.offset, self.secredity)
                 self.state = 'Start game'
             elif self.state == 'Start game':
@@ -99,8 +85,6 @@ class MainMenu(Menu):
         if self.start_screen.START_KEY:
             if self.state == 'Start game':
                 self.start_screen.curr_menu = self.start_screen.stardif
-            elif self.state == 'Multiplayer':
-                self.start_screen.curr_menu = self.start_screen.multiplayer_menu
             elif self.state == 'Options':
                 self.start_screen.curr_menu = self.start_screen.options
             self.run_display = False
@@ -881,376 +865,48 @@ class Win(Menu):
                 pygame.quit()
 
 
-           
+class Lose(Menu):
 
-class MultiplayerMenu(Menu):
+
     def __init__(self, start_screen):
         Menu.__init__(self, start_screen)
-        self.state = "Set Name"
-        self.namex, self.namey = self.mid_w, self.mid_h - 40
-        self.createx, self.createy = self.mid_w, self.mid_h + 20
-        self.joinx, self.joiny = self.mid_w, self.mid_h + 80
-        self.backx, self.backy = self.mid_w, self.mid_h + 140
-        self.cursor_rect.midtop = (self.namex + self.offset, self.namey)
-        self.background = pygame.image.load("images/background3.png").convert()
-        self.background = pygame.transform.scale(
-            self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
-        )
-
+        self.state = 'Main menu'
+        self.codx, self.cody = self.mid_w, self.mid_h + 60
+        self.cursor_rect.midtop = (self.codx + self.offset, self.cody)
+        self.background = pygame.image.load('images/TileExploded.png').convert()
+        self.background = pygame.transform.scale(self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H))
     def display_menu(self):
         self.run_display = True
         while self.run_display:
             self.start_screen.check_events()
             self.check_input()
             self.start_screen.display.blit(self.background, (0, 0))
-            self.start_screen.draw_text(
-                "Multiplayer", 50, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H / 2 - 120
-            )
-            self.start_screen.draw_text(
-                f"Set Name ({self.start_screen.player_name or 'None'})", 30, self.namex, self.namey
-            )
-            self.start_screen.draw_text("Create Room", 30, self.createx, self.createy)
-            self.start_screen.draw_text("Join Room", 30, self.joinx, self.joiny)
-            self.start_screen.draw_text("Back", 30, self.backx, self.backy)
+            self.start_screen.draw_text('You lost!', 50, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H / 2 - 80)
+            self.start_screen.draw_text("Main menu", 35, self.codx, self.cody)
+
+
             self.draw_cursor()
             self.blit_screen()
 
-    def move_cursor(self):
-        if self.start_screen.DOWN_KEY:
-            if self.state == "Set Name":
-                self.cursor_rect.midtop = (self.createx + self.offset, self.createy)
-                self.state = "Create Room"
-            elif self.state == "Create Room":
-                self.cursor_rect.midtop = (self.joinx + self.offset, self.joiny)
-                self.state = "Join Room"
-            elif self.state == "Join Room":
-                self.cursor_rect.midtop = (self.backx + self.offset, self.backy)
-                self.state = "Back"
-            elif self.state == "Back":
-                self.cursor_rect.midtop = (self.namex + self.offset, self.namey)
-                self.state = "Set Name"
-
-        elif self.start_screen.UP_KEY:
-            if self.state == "Set Name":
-                self.cursor_rect.midtop = (self.backx + self.offset, self.backy)
-                self.state = "Back"
-            elif self.state == "Back":
-                self.cursor_rect.midtop = (self.joinx + self.offset, self.joiny)
-                self.state = "Join Room"
-            elif self.state == "Join Room":
-                self.cursor_rect.midtop = (self.createx + self.offset, self.createy)
-                self.state = "Create Room"
-            elif self.state == "Create Room":
-                self.cursor_rect.midtop = (self.namex + self.offset, self.namey)
-                self.state = "Set Name"
-
     def check_input(self):
-        self.move_cursor()
         if self.start_screen.BACK_KEY:
             self.start_screen.curr_menu = self.start_screen.main_menu
             self.run_display = False
+        elif self.start_screen.UP_KEY:
+            if self.state == 'Main menu':
+                self.state = 'Main menu'
+                self.cursor_rect.midtop = (self.codx + self.offset, self.cody)
+        elif self.start_screen.DOWN_KEY:
+            if self.state == 'Main menu':
+                self.state = 'Main menu'
+                self.cursor_rect.midtop = (self.codx + self.offset, self.cody)
+
+                
         elif self.start_screen.START_KEY:
-            if self.state == "Set Name":
-                self.start_screen.curr_menu = self.start_screen.name_menu
-            elif self.state == "Create Room":
-                self.start_screen.next_multiplayer_action = "create"
-                if not self.start_screen.player_name:
-                    self.start_screen.curr_menu = self.start_screen.name_menu
-                else:
-                    self.start_screen.curr_menu = self.start_screen.room_menu
-            elif self.state == "Join Room":
-                self.start_screen.next_multiplayer_action = "join"
-                if not self.start_screen.player_name:
-                    self.start_screen.curr_menu = self.start_screen.name_menu
-                else:
-                    self.start_screen.curr_menu = self.start_screen.room_menu
-            elif self.state == "Back":
+            if self.state == 'Main menu':
+                print("in")
                 self.start_screen.curr_menu = self.start_screen.main_menu
-            self.run_display = False
+                pygame.quit()
 
 
-class NameEntryMenu(Menu):
-    def __init__(self, start_screen):
-        Menu.__init__(self, start_screen)
-        self.background = pygame.image.load("images/background3.png").convert()
-        self.background = pygame.transform.scale(
-            self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
-        )
-
-    def display_menu(self):
-        self.run_display = True
-        input_box = pygame.Rect(
-            self.start_screen.DISPLAY_W / 2 - 160,
-            self.start_screen.DISPLAY_H / 2,
-            320,
-            32,
-        )
-        input_text = self.start_screen.player_name
-        while self.run_display:
-            self.start_screen.check_events()
-            self.start_screen.display.blit(self.background, (0, 0))
-            self.start_screen.draw_text(
-                "Enter your name",
-                40,
-                self.start_screen.DISPLAY_W / 2,
-                self.start_screen.DISPLAY_H / 2 - 80,
-            )
-            font = pygame.font.Font("fonts/Jolana.ttf", 30)
-            input_surface = font.render(input_text, True, self.start_screen.WHITE)
-            self.start_screen.display.blit(input_surface, (input_box.x + 5, input_box.y + 5))
-            input_box.w = max(320, input_surface.get_width() + 10)
-
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        input_text = input_text[:-1]
-                    elif event.key == pygame.K_RETURN:
-                        self.start_screen.player_name = input_text.strip() or "Player"
-                        self.start_screen.curr_menu = self.start_screen.multiplayer_menu
-                        self.run_display = False
-                    elif event.unicode.isprintable():
-                        input_text += event.unicode
-
-            self.blit_screen()
-
-
-class RoomMenu(Menu):
-    def __init__(self, start_screen):
-        Menu.__init__(self, start_screen)
-        self.background = pygame.image.load("images/background3.png").convert()
-        self.background = pygame.transform.scale(
-            self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
-        )
-
-    def display_menu(self):
-        self.run_display = True
-        input_box = pygame.Rect(
-            self.start_screen.DISPLAY_W / 2 - 160,
-            self.start_screen.DISPLAY_H / 2,
-            320,
-            32,
-        )
-        input_text = ""
-        action = self.start_screen.next_multiplayer_action
-        while self.run_display:
-            self.start_screen.check_events()
-            self.start_screen.display.blit(self.background, (0, 0))
-            if action == "join":
-                self.start_screen.draw_text(
-                    "Enter room code",
-                    40,
-                    self.start_screen.DISPLAY_W / 2,
-                    self.start_screen.DISPLAY_H / 2 - 80,
-                )
-            else:
-                self.start_screen.draw_text(
-                    "Create a room",
-                    40,
-                    self.start_screen.DISPLAY_W / 2,
-                    self.start_screen.DISPLAY_H / 2 - 80,
-                )
-                self.start_screen.draw_text(
-                    "Press Enter to create",
-                    24,
-                    self.start_screen.DISPLAY_W / 2,
-                    self.start_screen.DISPLAY_H / 2 - 20,
-                )
-            font = pygame.font.Font("fonts/Jolana.ttf", 30)
-            input_surface = font.render(input_text, True, self.start_screen.WHITE)
-            if action == "join":
-                self.start_screen.display.blit(input_surface, (input_box.x + 5, input_box.y + 5))
-                input_box.w = max(320, input_surface.get_width() + 10)
-
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_BACKSPACE:
-                        input_text = input_text[:-1]
-                    elif event.key == pygame.K_RETURN:
-                        client = self.start_screen.ensure_network()
-                        if action == "join":
-                            client.send(
-                                "join_room",
-                                {
-                                    "code": input_text.strip().upper(),
-                                    "name": self.start_screen.player_name,
-                                },
-                            )
-                        else:
-                            client.send(
-                                "create_room",
-                                {"name": self.start_screen.player_name},
-                            )
-                        self.start_screen.curr_menu = self.start_screen.lobby_menu
-                        self.run_display = False
-                    elif event.unicode.isprintable() and action == "join":
-                        input_text += event.unicode
-
-            self.blit_screen()
-
-
-class LobbyMenu(Menu):
-    def __init__(self, start_screen):
-        Menu.__init__(self, start_screen)
-        self.background = pygame.image.load("images/background3.png").convert()
-        self.background = pygame.transform.scale(
-            self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
-        )
-
-    def display_menu(self):
-        self.run_display = True
-        while self.run_display:
-            self.start_screen.check_events()
-            self.check_input()
-            state = self.start_screen.multiplayer_state
-            self.start_screen.display.blit(self.background, (0, 0))
-            self.start_screen.draw_text(
-                "Lobby", 50, self.start_screen.DISPLAY_W / 2, 80
-            )
-            room_code = state.get("room_code") or "---"
-            self.start_screen.draw_text(
-                f"Room Code: {room_code}", 30, self.start_screen.DISPLAY_W / 2, 140
-            )
-            settings = state.get("settings", {})
-            settings_line = (
-                f"Tiles: {settings.get('rows', 10)} | "
-                f"Prob: {settings.get('probability', 0.15)} | "
-                f"Width: {settings.get('width', self.start_screen.DISPLAY_W)}"
-            )
-            self.start_screen.draw_text(
-                settings_line,
-                22,
-                self.start_screen.DISPLAY_W / 2,
-                180,
-            )
-            self.start_screen.draw_text("Players:", 30, 140, 200)
-            y_offset = 240
-            for player in state.get("players", []):
-                label = f"{player.get('name', 'Player')} - {player.get('status', 'alive')}"
-                self.start_screen.draw_text(label, 24, 200, y_offset)
-                y_offset += 40
-            if self.is_host():
-                self.start_screen.draw_text(
-                    "Edit settings (E)", 24, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H - 140
-                )
-                self.start_screen.draw_text(
-                    "Start game (Enter)", 24, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H - 100
-                )
-            self.start_screen.draw_text(
-                "Back (Esc)", 24, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H - 60
-            )
-            self.blit_screen()
-
-    def is_host(self):
-        state = self.start_screen.multiplayer_state
-        return state.get("player_id") == state.get("host_id")
-
-    def check_input(self):
-        if self.start_screen.BACK_KEY:
-            self.start_screen.curr_menu = self.start_screen.multiplayer_menu
-            self.run_display = False
-            return
-        if self.start_screen.E_KEY and self.is_host():
-            self.start_screen.curr_menu = self.start_screen.lobby_settings_menu
-            self.run_display = False
-            return
-        if self.start_screen.START_KEY and self.is_host():
-            state = self.start_screen.multiplayer_state
-            client = self.start_screen.ensure_network()
-            client.send(
-                "start_game",
-                {
-                    "code": state.get("room_code"),
-                    "player_id": state.get("player_id"),
-                },
-            )
-
-
-class LobbySettingsMenu(Menu):
-    def __init__(self, start_screen):
-        Menu.__init__(self, start_screen)
-        self.background = pygame.image.load("images/background3.png").convert()
-        self.background = pygame.transform.scale(
-            self.background, (self.start_screen.DISPLAY_W, self.start_screen.DISPLAY_H)
-        )
-
-    def display_menu(self):
-        self.run_display = True
-        input_box = pygame.Rect(
-            self.start_screen.DISPLAY_W / 2 - 200,
-            self.start_screen.DISPLAY_H / 2,
-            400,
-            32,
-        )
-        settings = self.start_screen.multiplayer_state.get("settings", {})
-        rows = str(settings.get("rows", 10))
-        probability = str(settings.get("probability", 0.15))
-        width = str(settings.get("width", self.start_screen.DISPLAY_W))
-        field = "rows"
-        while self.run_display:
-            self.start_screen.check_events()
-            self.start_screen.display.blit(self.background, (0, 0))
-            self.start_screen.draw_text(
-                "Lobby Settings",
-                40,
-                self.start_screen.DISPLAY_W / 2,
-                self.start_screen.DISPLAY_H / 2 - 120,
-            )
-            self.start_screen.draw_text(
-                "Use Tab to switch fields, Enter to save",
-                20,
-                self.start_screen.DISPLAY_W / 2,
-                self.start_screen.DISPLAY_H / 2 - 80,
-            )
-
-            font = pygame.font.Font("fonts/Jolana.ttf", 26)
-            field_label = f"Tiles: {rows}  |  Probability: {probability}  |  Width: {width}"
-            input_surface = font.render(field_label, True, self.start_screen.WHITE)
-            self.start_screen.display.blit(input_surface, (input_box.x + 5, input_box.y + 5))
-            input_box.w = max(400, input_surface.get_width() + 10)
-
-            for event in pygame.event.get():
-                if event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_TAB:
-                        field = "probability" if field == "rows" else "width" if field == "probability" else "rows"
-                    elif event.key == pygame.K_BACKSPACE:
-                        if field == "rows":
-                            rows = rows[:-1]
-                        elif field == "probability":
-                            probability = probability[:-1]
-                        else:
-                            width = width[:-1]
-                    elif event.key == pygame.K_RETURN:
-                        self.save_settings(rows, probability, width)
-                        self.start_screen.curr_menu = self.start_screen.lobby_menu
-                        self.run_display = False
-                    elif event.unicode.isdigit() or (event.unicode == "." and field == "probability"):
-                        if field == "rows":
-                            rows += event.unicode
-                        elif field == "probability":
-                            probability += event.unicode
-                        else:
-                            width += event.unicode
-
-            self.blit_screen()
-
-    def save_settings(self, rows, probability, width):
-        try:
-            settings = {
-                "rows": int(rows),
-                "cols": int(rows),
-                "probability": float(probability),
-                "width": int(width),
-            }
-        except ValueError:
-            return
-        state = self.start_screen.multiplayer_state
-        state["settings"] = settings
-        client = self.start_screen.ensure_network()
-        client.send(
-            "update_settings",
-            {
-                "code": state.get("room_code"),
-                "player_id": state.get("player_id"),
-                "settings": settings,
-            },
-        )
+           

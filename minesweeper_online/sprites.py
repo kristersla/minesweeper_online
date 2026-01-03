@@ -1,7 +1,7 @@
 import random
 
 import pygame
-
+from settings import *
 
 # types list
 # "." -> unknown
@@ -11,9 +11,8 @@ import pygame
 
 
 class Tile:
-    def __init__(self, settings, x, y, image, type, revealed=False, flagged=False):
-        self.settings = settings
-        self.x, self.y = x * settings.tilesize, y * settings.tilesize
+    def __init__(self, x, y, image, type, revealed=False, flagged=False):
+        self.x, self.y = x * TILESIZE, y * TILESIZE
         self.image = image
         self.type = type
         self.revealed = revealed
@@ -23,57 +22,46 @@ class Tile:
         if not self.flagged and self.revealed:
             board_surface.blit(self.image, (self.x, self.y))
         elif self.flagged and not self.revealed:
-            board_surface.blit(self.settings.tile_flag, (self.x, self.y))
+            board_surface.blit(tile_flag, (self.x, self.y))
         elif not self.revealed:
-            board_surface.blit(self.settings.tile_unknown, (self.x, self.y))
+            board_surface.blit(tile_unknown, (self.x, self.y))
 
     def __repr__(self):
         return self.type
 
 
 class Board:
-    def __init__(self, settings, seed=None):
-        self.settings = settings
-        self.random = random.Random(seed)
-        self.board_surface = pygame.Surface(
-            (settings.screen_width, settings.screen_height)
-        )
-        self.board_list = [
-            [
-                Tile(settings, col, row, settings.tile_empty, ".")
-                for row in range(settings.rows)
-            ]
-            for col in range(settings.cols)
-        ]
+    def __init__(self):
+        self.board_surface = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+        self.board_list = [[Tile(col, row, tile_empty, ".") for row in range(ROWS)] for col in range(COLS)]
         self.place_mines()
         self.place_clues()
         self.dug = []
 
     def place_mines(self):
-        for _ in range(self.settings.amount_mines):
+        for _ in range(AMOUNT_MINES):
             while True:
-                x = self.random.randint(0, self.settings.rows - 1)
-                y = self.random.randint(0, self.settings.cols - 1)
+                x = random.randint(0, ROWS-1)
+                y = random.randint(0, COLS-1)
 
                 if self.board_list[x][y].type == ".":
-                    self.board_list[x][y].image = self.settings.tile_mine
+                    self.board_list[x][y].image = tile_mine
                     self.board_list[x][y].type = "X"
                     break
 
     def place_clues(self):
-        for x in range(self.settings.rows):
-            for y in range(self.settings.cols):
+        for x in range(ROWS):
+            for y in range(COLS):
                 if self.board_list[x][y].type != "X":
                     total_mines = self.check_neighbours(x, y)
                     if total_mines > 0:
-                        self.board_list[x][y].image = self.settings.tile_numbers[
-                            total_mines - 1
-                        ]
+                        self.board_list[x][y].image = tile_numbers[total_mines-1]
                         self.board_list[x][y].type = "C"
 
 
-    def is_inside(self, x, y):
-        return 0 <= x < self.settings.rows and 0 <= y < self.settings.cols
+    @staticmethod
+    def is_inside(x, y):
+        return 0 <= x < ROWS and 0 <= y < COLS
 
     def check_neighbours(self, x, y):
         total_mines = 0
@@ -96,7 +84,7 @@ class Board:
         self.dug.append((x, y))
         if self.board_list[x][y].type == "X":
             self.board_list[x][y].revealed = True
-            self.board_list[x][y].image = self.settings.tile_exploded
+            self.board_list[x][y].image = tile_exploded
             return False
         elif self.board_list[x][y].type == "C":
             self.board_list[x][y].revealed = True
@@ -104,12 +92,8 @@ class Board:
 
         self.board_list[x][y].revealed = True
 
-        for row in range(
-            max(0, x - 1), min(self.settings.rows - 1, x + 1) + 1
-        ):
-            for col in range(
-                max(0, y - 1), min(self.settings.cols - 1, y + 1) + 1
-            ):
+        for row in range(max(0, x-1), min(ROWS-1, x+1) + 1):
+            for col in range(max(0, y-1), min(COLS-1, y+1) + 1):
                 if (row, col) not in self.dug:
                     self.dig(row, col)
         return True

@@ -1,23 +1,16 @@
-import json
-import os
 import subprocess
-import time
-
 import pygame
-
-from settings import Settings
 from start_screen import Start_Screen
+import json
+import time
 
 pygame.init()
 pygame.display.set_caption('Minesweeper')
 icon = pygame.image.load(r"images\icon.png")
 pygame.display.set_icon(icon)
 
-if os.path.exists("jsons/resx.json"):
-    with open("jsons/resx.json", "r") as f:
-        data2 = json.load(f)
-else:
-    data2 = Settings._read_json("jsons/resx.json", {"width": 720})
+with open('jsons/resx.json', 'r') as f:
+    data2 = json.load(f)
 
 screen = pygame.display.set_mode((int(data2['width']), int(data2['width'])))
 background_image = pygame.image.load('images/background3.png').convert()
