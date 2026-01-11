@@ -1194,6 +1194,10 @@ class LobbySettingsMenu(Menu):
         rows = str(settings.get("rows", 10))
         probability = str(settings.get("probability", 0.15))
         width = str(settings.get("width", self.start_screen.DISPLAY_W))
+        initial_rows = rows
+        initial_probability = probability
+        initial_width = width
+        width = str(settings.get("width", self.start_screen.DISPLAY_W))
         field_order = ["rows", "probability", "width"]
         field = "rows"
         preset_index = None
@@ -1212,20 +1216,7 @@ class LobbySettingsMenu(Menu):
                 self.start_screen.DISPLAY_W / 2,
                 self.start_screen.DISPLAY_H / 2 - 80,
             )
-            preset_label = "Presets: 1) Beginner  2) Easy  3) Medium  4) Hard"
-            self.start_screen.draw_text(
-                preset_label,
-                18,
-                self.start_screen.DISPLAY_W / 2,
-                self.start_screen.DISPLAY_H / 2 - 50,
-            )
-            if preset_index is not None:
-                self.start_screen.draw_text(
-                    f"Selected preset: {self.presets[preset_index]['name']}",
-                    18,
-                    self.start_screen.DISPLAY_W / 2,
-                    self.start_screen.DISPLAY_H / 2 - 25,
-                )
+            
 
             font = pygame.font.Font("fonts/Jolana.ttf", 26)
             tiles_label = f"[{rows}]" if field == "rows" else rows
@@ -1243,11 +1234,17 @@ class LobbySettingsMenu(Menu):
                     if event.key == pygame.K_TAB:
                         field_index = field_order.index(field)
                         field = field_order[(field_index + 1) % len(field_order)]
-                    elif field != "probability" and event.key in (
+                    elif (
+                        field == "rows"
+                        and rows == initial_rows
+                        and probability == initial_probability
+                        and width == initial_width
+                        and event.key in (
                         pygame.K_1,
                         pygame.K_2,
                         pygame.K_3,
                         pygame.K_4,
+                        )
                     ):
                         preset_index = event.key - pygame.K_1
                         preset = self.presets[preset_index]
