@@ -7,7 +7,6 @@ from settings import BGCOLOUR, Settings, MULTIPLAYER_SIDEBAR_WIDTH
 from sprites import Board
 from start_screen import Start_Screen
 
-
 class Game:
     def __init__(self, settings=None, multiplayer=None):
         pygame.init()
@@ -86,7 +85,10 @@ class Game:
             True,
             (255, 255, 255),
         )
-        mine_count_rect = mine_count_text.get_rect(topright=(self.screen.get_width() - 10, 10))
+        mine_right_edge = self.screen.get_width() - 10
+        if self.multiplayer:
+            mine_right_edge -= self.sidebar_width
+        mine_count_rect = mine_count_text.get_rect(topright=(mine_right_edge, 10))
         self.screen.blit(mine_count_text, mine_count_rect)
 
         if self.multiplayer:

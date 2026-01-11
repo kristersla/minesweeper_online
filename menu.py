@@ -194,7 +194,7 @@ class CreditsMenu(Menu):
                 self.run_display = False
             self.start_screen.display.blit(self.background, (0, 0))
             self.start_screen.draw_text('Credits', 50, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H / 2 - 70)
-            self.start_screen.draw_text('Made by Kristaps un Kristers', 37, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H / 2 + 10)
+            self.start_screen.draw_text('Made by Kristers, Liva and Anna', 37, self.start_screen.DISPLAY_W / 2, self.start_screen.DISPLAY_H / 2 + 10)
             self.blit_screen()
 
 class DiffucltyGame(Menu):
@@ -1112,9 +1112,11 @@ class LobbyMenu(Menu):
                 f"Room Code: {room_code}", 30, self.start_screen.DISPLAY_W / 2, 140
             )
             settings = state.get("settings", {})
+            rows = settings.get("rows", 10)
+            probability = settings.get("probability", 0.15)
             settings_line = (
-                f"Tiles: {settings.get('rows', 10)} | "
-                f"Prob: {settings.get('probability', 0.15)} | "
+                f"Tiles: {rows} | "
+                f"Prob: {probability} | "
                 f"Width: {settings.get('width', self.start_screen.DISPLAY_W)}"
             )
             self.start_screen.draw_text(
@@ -1192,6 +1194,7 @@ class LobbySettingsMenu(Menu):
         rows = str(settings.get("rows", 10))
         probability = str(settings.get("probability", 0.15))
         width = str(settings.get("width", self.start_screen.DISPLAY_W))
+        field_order = ["rows", "probability", "width"]
         field = "rows"
         preset_index = None
         while self.run_display:
@@ -1238,8 +1241,14 @@ class LobbySettingsMenu(Menu):
             for event in pygame.event.get():
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_TAB:
-                        field = "probability" if field == "rows" else "width" if field == "probability" else "rows"
-                    elif event.key in (pygame.K_1, pygame.K_2, pygame.K_3, pygame.K_4):
+                        field_index = field_order.index(field)
+                        field = field_order[(field_index + 1) % len(field_order)]
+                    elif field != "probability" and event.key in (
+                        pygame.K_1,
+                        pygame.K_2,
+                        pygame.K_3,
+                        pygame.K_4,
+                    ):
                         preset_index = event.key - pygame.K_1
                         preset = self.presets[preset_index]
                         rows = str(preset["rows"])
@@ -1251,7 +1260,7 @@ class LobbySettingsMenu(Menu):
                             rows = rows[:-1]
                         elif field == "probability":
                             probability = probability[:-1]
-                        else:
+                        elif field == "width":
                             width = width[:-1]
                     elif event.key in (pygame.K_RETURN, pygame.K_KP_ENTER):
                         self.save_settings(rows, probability, width)
@@ -1260,12 +1269,15 @@ class LobbySettingsMenu(Menu):
                     elif event.key == pygame.K_ESCAPE:
                         self.start_screen.curr_menu = self.start_screen.lobby_menu
                         self.run_display = False
-                    elif event.unicode.isdigit() or (event.unicode == "." and field == "probability"):
+                    elif (
+                        field in ("rows", "probability", "width")
+                        and (event.unicode.isdigit() or (event.unicode == "." and field == "probability"))
+                    ):
                         if field == "rows":
                             rows += event.unicode
                         elif field == "probability":
                             probability += event.unicode
-                        else:
+                        elif field == "width":
                             width += event.unicode
                 elif event.type == pygame.QUIT:
                     self.start_screen.running = False
